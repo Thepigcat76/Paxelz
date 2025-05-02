@@ -6,6 +6,10 @@
   "target": "@env(DEFAULT)",
   "compatibilityLevel": "JAVA_21",
   "client": [
+    "BlockRendererMixin",
     "LevelRendererAccess"
+  ],
+  "mixins": [
+    "BlockBehaviourMixin"
   ]
 }

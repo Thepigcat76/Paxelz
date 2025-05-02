@@ -1,6 +1,0 @@
-{
-  "parent": "minecraft:item/generated",
-  "textures": {
-    "layer0": "paxelz:item/upgrade_wall_phase"
-  }
-}

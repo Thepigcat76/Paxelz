@@ -2,6 +2,7 @@ package com.thepigcat.paxelz.client;
 
 import com.thepigcat.paxelz.Paxelz;
 import com.thepigcat.paxelz.PaxelzTags;
+import com.thepigcat.paxelz.content.items.PaxelItem;
 import com.thepigcat.paxelz.mixins.LevelRendererAccess;
 import com.thepigcat.paxelz.registries.PaxelzComponents;
 import com.thepigcat.paxelz.registries.PaxelzUpgrades;
@@ -24,6 +25,7 @@ import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.client.event.RenderHighlightEvent;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.level.BlockEvent;
 
 @Mod(value = PaxelzClient.MODID, dist = Dist.CLIENT)
 public final class PaxelzClient {
@@ -38,48 +40,19 @@ public final class PaxelzClient {
         ItemStack itemStack = player.getMainHandItem();
         if (!player.isShiftKeyDown() && itemStack.is(PaxelzTags.Items.PAXEL)) {
             if (itemStack.get(PaxelzComponents.UPGRADES).hasUpgrade(PaxelzUpgrades.AREA_MINING.get())) {
-                Vec3 renderView = event.getCamera().getPosition();
                 BlockPos blockPos = event.getTarget().getBlockPos();
-                int minOffsetX = 0;
-                int minOffsetY = 0;
-                int minOffsetZ = 0;
-                int maxOffsetX = 0;
-                int maxOffsetY = 0;
-                int maxOffsetZ = 0;
-                switch (event.getTarget().getDirection().getAxis()) {
-                    case X -> {
-                        minOffsetY = -1;
-                        minOffsetZ = -1;
-                        maxOffsetX = 1;
-                        maxOffsetY = 2;
-                        maxOffsetZ = 2;
-                    }
-                    case Y -> {
-                        minOffsetX = -1;
-                        minOffsetZ = -1;
-                        maxOffsetX = 2;
-                        maxOffsetY = 1;
-                        maxOffsetZ = 2;
-                    }
-                    case Z -> {
-                        minOffsetX = -1;
-                        minOffsetY = -1;
-                        maxOffsetX = 2;
-                        maxOffsetY = 2;
-                        maxOffsetZ = 1;
-                    }
-                };
-                AABB box = new AABB(
-                        blockPos.getX() + minOffsetX - renderView.x(), blockPos.getY() + minOffsetY - renderView.y, blockPos.getZ() + minOffsetZ - renderView.z(),
-                        blockPos.getX() + maxOffsetX - renderView.x(), blockPos.getY() + maxOffsetY - renderView.y, blockPos.getZ() + maxOffsetZ - renderView.z()
-                );
-
-                ((LevelRendererAccess) event.getLevelRenderer()).callRenderLineBox(
-                        event.getPoseStack(),
-                        event.getMultiBufferSource().getBuffer(RenderType.lines()),
-                        box,
-                        0.0F, 0.0F, 0.0F, 0.4F
-                );
+                Vec3 cameraPos = event.getCamera().getPosition();
+                Iterable<BlockPos> positions = PaxelItem.get3x3MiningArea(blockPos, event.getTarget().getDirection());
+                for (BlockPos pos : positions) {
+                    ((LevelRendererAccess) event.getLevelRenderer()).callRenderHitOutline(
+                            event.getPoseStack(),
+                            event.getMultiBufferSource().getBuffer(RenderType.lines()),
+                            event.getCamera().getEntity(),
+                            cameraPos.x(), cameraPos.y(), cameraPos.z(),
+                            pos,
+                            Minecraft.getInstance().level.getBlockState(pos)
+                    );
+                }
                 event.setCanceled(true);
             }
         }

@@ -13,43 +13,42 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public record UpgradesComponent(NonNullList<Upgrade> upgrades, int upgradesAmount, int maxUpgrades) {
+public record UpgradesComponent(List<Upgrade> upgrades, int maxUpgrades) {
     public static final Codec<UpgradesComponent> CODEC = RecordCodecBuilder.create(inst -> inst.group(
             CodecUtils.registryCodec(PaxelzRegistries.UPGRADE).listOf().fieldOf("upgrades").forGetter(UpgradesComponent::upgrades),
-            Codec.INT.fieldOf("upgradesAmount").forGetter(UpgradesComponent::upgradesAmount),
             Codec.INT.fieldOf("maxUpgrades").forGetter(UpgradesComponent::maxUpgrades)
     ).apply(inst, UpgradesComponent::new));
     public static final StreamCodec<RegistryFriendlyByteBuf, UpgradesComponent> STREAM_CODEC = StreamCodec.composite(
             CodecUtils.registryStreamCodec(PaxelzRegistries.UPGRADE).apply(ByteBufCodecs.list()),
             UpgradesComponent::upgrades,
             ByteBufCodecs.INT,
-            UpgradesComponent::upgradesAmount,
-            ByteBufCodecs.INT,
             UpgradesComponent::maxUpgrades,
             UpgradesComponent::new
     );
 
-    public UpgradesComponent(List<Upgrade> upgrades, int upgradesAmount, int maxUpgrades) {
-        this(copyOf(upgrades), upgradesAmount, maxUpgrades);
-    }
-
     public UpgradesComponent(int maxUpgrades) {
-        this(NonNullList.withSize(maxUpgrades, Upgrade.EMPTY), 0, maxUpgrades);
+        this(new ArrayList<>(), maxUpgrades);
     }
 
     public UpgradesComponent addUpgrade(Upgrade upgrade) {
-        if (upgradesAmount < this.maxUpgrades) {
-            this.upgrades.set(this.upgradesAmount, upgrade);
-            return new UpgradesComponent(this.upgrades, this.upgradesAmount + 1, this.maxUpgrades);
+        if (this.upgrades.size() < maxUpgrades) {
+            List<Upgrade> upgrades = new ArrayList<>(this.upgrades);
+            upgrades.add(upgrade);
+            return new UpgradesComponent(upgrades, this.maxUpgrades);
         }
         return this;
     }
 
     public UpgradesComponent removeUpgrade() {
-        this.upgrades.set(this.upgradesAmount - 1, Upgrade.EMPTY);
-        return new UpgradesComponent(this.upgrades, this.upgradesAmount - 1, this.maxUpgrades);
+        if (!this.upgrades.isEmpty()) {
+            List<Upgrade> upgrades = new ArrayList<>(this.upgrades);
+            upgrades.removeLast();
+            return new UpgradesComponent(upgrades, this.maxUpgrades);
+        }
+        return this;
     }
 
     public boolean hasUpgrade(Upgrade upgrade) {
@@ -58,7 +57,7 @@ public record UpgradesComponent(NonNullList<Upgrade> upgrades, int upgradesAmoun
 
     public void addTooltip(List<Component> components) {
         components.add(Component.translatable("tooltip.paxelz.paxel_item.upgrades")
-                .withStyle(this.upgradesAmount == 0 ? ChatFormatting.RED : (this.upgradesAmount == this.maxUpgrades ? ChatFormatting.GREEN : ChatFormatting.GOLD)));
+                .withStyle(this.upgrades.isEmpty() ? ChatFormatting.RED : (this.upgrades.size() == this.maxUpgrades ? ChatFormatting.GREEN : ChatFormatting.GOLD)));
         for (int i = 0; i < this.maxUpgrades; i++) {
             Upgrade upgrade = PaxelzUpgrades.EMPTY.get();
             if (i < this.upgrades.size()) {

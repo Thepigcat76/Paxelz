@@ -7,10 +7,11 @@
   "item.paxelz.upgrade_area_mining": "Upgrade Area Mining",
   "item.paxelz.upgrade_base": "Upgrade Base",
   "item.paxelz.upgrade_energy_storage": "Upgrade Energy Storage",
+  "item.paxelz.upgrade_spelunker": "Upgrade Spelunker",
   "item.paxelz.upgrade_storage_link": "Upgrade Storage Link",
   "item.paxelz.upgrade_vein_miner": "Upgrade Vein Miner",
-  "item.paxelz.upgrade_wall_phase": "Upgrade Wall Phase",
   "item.paxelz.wooden_paxel": "Wooden Paxel",
+  "message.paxelz.storage_link": "Storage Linked!",
   "tab.paxelz.main": "Paxelz",
   "tooltip.paxelz.energy_amount": "%d/%d",
   "tooltip.paxelz.energy_stored": "Stored: ",
@@ -20,5 +21,5 @@
   "upgrade.paxelz.energy_storage": "Energy Storage",
   "upgrade.paxelz.storage_link": "Storage Link",
   "upgrade.paxelz.vein_miner": "Vein Miner",
-  "upgrade.paxelz.wall_phase": "Wall Phase"
+  "upgrade.paxelz.wall_phase": "Spelunker"
 }

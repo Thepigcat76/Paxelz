@@ -35,14 +35,14 @@ public final class PaxelzLangProvider extends LanguageProvider {
         add(PaxelzItems.UPGRADE_ENERGY_STORAGE.get(), "Upgrade Energy Storage");
         add(PaxelzItems.UPGRADE_STORAGE_LINK.get(), "Upgrade Storage Link");
         add(PaxelzItems.UPGRADE_VEIN_MINER.get(), "Upgrade Vein Miner");
-        add(PaxelzItems.UPGRADE_WALL_PHASE.get(), "Upgrade Wall Phase");
+        add(PaxelzItems.UPGRADE_SPELUNKER.get(), "Upgrade Spelunker");
 
         addUpgrade(PaxelzUpgrades.EMPTY.get(), "Empty");
         addUpgrade(PaxelzUpgrades.AREA_MINING.get(), "Area Mining");
         addUpgrade(PaxelzUpgrades.ENERGY_STORAGE.get(), "Energy Storage");
         addUpgrade(PaxelzUpgrades.STORAGE_LINK.get(), "Storage Link");
         addUpgrade(PaxelzUpgrades.VEIN_MINER.get(), "Vein Miner");
-        addUpgrade(PaxelzUpgrades.WALL_PHASE.get(), "Wall Phase");
+        addUpgrade(PaxelzUpgrades.SPELUNKER.get(), "Spelunker");
     }
 
     private void addUpgrade(Upgrade upgrade, String name) {

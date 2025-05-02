@@ -1,12 +1,10 @@
 package com.thepigcat.paxelz.registries;
 
 import com.thepigcat.paxelz.Paxelz;
-import com.thepigcat.paxelz.content.components.UpgradesComponent;
 import com.thepigcat.paxelz.content.items.PaxelItem;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
@@ -31,7 +29,7 @@ public final class PaxelzTabs {
                     output.accept(PaxelzItems.UPGRADE_ENERGY_STORAGE);
                     output.accept(PaxelzItems.UPGRADE_STORAGE_LINK);
                     output.accept(PaxelzItems.UPGRADE_VEIN_MINER);
-                    output.accept(PaxelzItems.UPGRADE_WALL_PHASE);
+                    output.accept(PaxelzItems.UPGRADE_SPELUNKER);
                 })
                 .build());
     }

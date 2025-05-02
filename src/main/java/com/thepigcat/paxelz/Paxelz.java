@@ -1,20 +1,18 @@
 package com.thepigcat.paxelz;
 
 import com.thepigcat.paxelz.content.components.PaxelzEnergyComponent;
-import com.thepigcat.paxelz.registries.PaxelzComponents;
-import com.thepigcat.paxelz.registries.PaxelzItems;
-import com.thepigcat.paxelz.registries.PaxelzTabs;
-import com.thepigcat.paxelz.registries.PaxelzUpgrades;
+import com.thepigcat.paxelz.content.items.PaxelItem;
+import com.thepigcat.paxelz.registries.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.Containers;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.common.NeoForge;
@@ -22,7 +20,6 @@ import net.neoforged.neoforge.event.level.BlockDropsEvent;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemHandlerHelper;
 import net.neoforged.neoforge.registries.NewRegistryEvent;
-import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
@@ -47,6 +44,7 @@ public final class Paxelz {
         PaxelzTabs.TABS.register(modEventBus);
         PaxelzUpgrades.UPGRADES.register(modEventBus);
         PaxelzComponents.COMPONENTS.register(modEventBus);
+        PaxelzAttachments.ATTACHMENTS.register(modEventBus);
 
         modEventBus.addListener(this::onCapabilityAttached);
         modEventBus.addListener(this::registerRegistry);
@@ -75,25 +73,13 @@ public final class Paxelz {
                 ItemStack toolStack = event.getTool();
                 if (toolStack.is(PaxelzTags.Items.PAXEL)) {
                     if (toolStack.get(PaxelzComponents.UPGRADES).hasUpgrade(PaxelzUpgrades.STORAGE_LINK.get())) {
-                        Optional<BlockPos> _linkedPos = toolStack.get(PaxelzComponents.STORAGE_LINK);
-                        if (_linkedPos.isPresent()) {
-                            IItemHandler itemHandler = event.getLevel().getCapability(Capabilities.ItemHandler.BLOCK, _linkedPos.get(), null);
-                            if (itemHandler != null) {
-                                List<ItemStack> remainders = new ArrayList<>();
-                                for (ItemEntity itemEntity : event.getDrops()) {
-                                    ItemStack remainder = ItemHandlerHelper.insertItem(itemHandler, itemEntity.getItem(), false);
-                                    remainders.add(remainder);
-                                }
-                                for (ItemStack remainder : remainders) {
-                                    BlockPos pos = event.getPos();
-                                    Block.popResource(player.level(), pos, remainder);
-                                }
-                                if (event.getLevel() instanceof ServerLevel serverLevel) {
-                                    event.getState().getBlock().popExperience(serverLevel, event.getPos(), event.getDroppedExperience());
-                                }
-                                event.setCanceled(true);
-                            }
-                        }
+                        BlockState state = event.getState();
+                        ServerLevel level = event.getLevel();
+                        BlockPos pos1 = event.getPos();
+                        List<ItemEntity> drops = event.getDrops();
+                        int droppedExperience = event.getDroppedExperience();
+
+                        PaxelItem.handleBlockDrops(player, toolStack, level, drops.stream().map(ItemEntity::getItem).toList(), pos1, state, droppedExperience);
                     }
                 }
             }

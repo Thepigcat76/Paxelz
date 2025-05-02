@@ -3,7 +3,10 @@ package com.thepigcat.paxelz.content.items;
 import com.thepigcat.paxelz.PaxelzRegistries;
 import com.thepigcat.paxelz.PaxelzTags;
 import com.thepigcat.paxelz.api.upgrades.Upgrade;
+import com.thepigcat.paxelz.client.ClientWallPhaseManager;
+import com.thepigcat.paxelz.content.attachments.PassThroughBlocksAttachment;
 import com.thepigcat.paxelz.content.components.UpgradesComponent;
+import com.thepigcat.paxelz.registries.PaxelzAttachments;
 import com.thepigcat.paxelz.registries.PaxelzComponents;
 import com.thepigcat.paxelz.registries.PaxelzUpgrades;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
@@ -12,6 +15,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.FastColor;
@@ -27,20 +31,26 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.common.ItemAbilities;
 import net.neoforged.neoforge.common.ItemAbility;
 import net.neoforged.neoforge.energy.IEnergyStorage;
+import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.items.ItemHandlerHelper;
 
 import java.util.*;
 import java.util.function.*;
 
 public class PaxelItem extends DiggerItem {
+    // FROM FTB Ultimine :3, thanks to the FTB Team
     private static final List<BlockPos> NEIGHBOR_POSITIONS = new ArrayList<>(26);
     // all blocks in 5x5 square around block's Y-level, plus blocks directly above & below
     private static final List<BlockPos> NEIGHBOR_POSITIONS_PLANT = new ArrayList<>(26);
@@ -68,7 +78,7 @@ public class PaxelItem extends DiggerItem {
             IEnergyStorage energyStorage = itemStack.getCapability(Capabilities.EnergyStorage.ITEM);
             return energyStorage.getEnergyStored() >= ENERGY_USAGE;
         } else {
-            return itemStack.getDamageValue() >= 1;
+            return itemStack.getMaxDamage() - itemStack.getDamageValue() >= 1;
         }
     }
 
@@ -98,8 +108,8 @@ public class PaxelItem extends DiggerItem {
             }
 
             if (!upgrades.isEmpty() && action == ClickAction.SECONDARY && other.isEmpty()) {
-                if (upgrades.upgradesAmount() - 1 > 0) {
-                    Upgrade upgrade = upgrades.upgrades().get(upgrades.upgradesAmount() - 1);
+                if (!upgrades.upgrades().isEmpty()) {
+                    Upgrade upgrade = upgrades.upgrades().getLast();
                     upgrade.onUpgradeRemoved(stack);
                     stack.set(PaxelzComponents.UPGRADES, upgrades.removeUpgrade());
                     player.inventoryMenu.setCarried(upgrade.upgradeItem().getDefaultInstance());
@@ -127,6 +137,18 @@ public class PaxelItem extends DiggerItem {
                 return InteractionResult.SUCCESS;
             }
         }
+
+        if (hasUpgrade(itemInHand, PaxelzUpgrades.SPELUNKER) && !context.getPlayer().isShiftKeyDown()) {
+            PassThroughBlocksAttachment blocks = PassThroughBlocksAttachment.withBlocks(get3x3MiningArea(context.getClickedPos(), context.getClickedFace()));
+            context.getPlayer().setData(PaxelzAttachments.PASS_THROUGH_BLOCKS.get(), blocks);
+            if (context.getLevel().isClientSide()) {
+                ClientWallPhaseManager.WALL_PHASE_BLOCKS.clear();
+                ClientWallPhaseManager.WALL_PHASE_BLOCKS.addAll(blocks.blocks());
+            }
+            context.getPlayer().playSound(SoundEvents.EXPERIENCE_ORB_PICKUP);
+            return InteractionResult.SUCCESS;
+        }
+
         return InteractionResult.FAIL;
     }
 
@@ -163,7 +185,7 @@ public class PaxelItem extends DiggerItem {
             if (hasUpgrade(stack, PaxelzUpgrades.AREA_MINING)) {
                 BlockHitResult hitResult = getPlayerPOVHitResult(level, player, ClipContext.Fluid.NONE);
                 if (!player.isShiftKeyDown()) {
-                    mine3x3(player, pos, stack, hitResult.getDirection(), hasUpgrade ? energyStored : stack.getDamageValue(), hasUpgrade ? ENERGY_USAGE : 1, PaxelItem::damageItem);
+                    mine3x3(player, pos, stack, hitResult.getDirection(), hasUpgrade ? energyStored : stack.getMaxDamage() - stack.getDamageValue(), hasUpgrade ? ENERGY_USAGE : 1, PaxelItem::damageItem);
                 }
             }
             if (hasUpgrade) {
@@ -237,8 +259,7 @@ public class PaxelItem extends DiggerItem {
                     veinMine(stack, player, pos);
                     blocksToBreak--;
                 } else {
-                    // FIXME: Storage link upgrade
-                    blocksToBreak = breakBlock(level, targetPos, stored, blocksToBreak);
+                    blocksToBreak = breakBlock(player, targetPos, stack, stored, blocksToBreak, hasUpgrade(stack, PaxelzUpgrades.ENERGY_STORAGE) ? ENERGY_USAGE : 1);
                 }
                 if (!drainedFirst) {
                     drainFunction.accept(player, stack);
@@ -247,6 +268,14 @@ public class PaxelItem extends DiggerItem {
                 }
             }
         }
+    }
+
+    public static Iterable<BlockPos> get3x3x3PhaseArea(BlockPos center, Direction hitFace) {
+        return switch (hitFace) {
+            case NORTH, SOUTH -> BlockPos.betweenClosed(center.offset(-1, -1, -2), center.offset(1, 1, 0));
+            case EAST, WEST -> BlockPos.betweenClosed(center.offset(-2, -1, -1), center.offset(0, 1, 1));
+            default -> BlockPos.betweenClosed(center.offset(-1, -2, -1), center.offset(1, 0, 1));
+        };
     }
 
     // Method to get the 3x3 mining area based on the face the player hit
@@ -262,15 +291,28 @@ public class PaxelItem extends DiggerItem {
         return (state.is(BlockTags.MINEABLE_WITH_PICKAXE) || state.is(BlockTags.MINEABLE_WITH_SHOVEL) || state.is(BlockTags.MINEABLE_WITH_AXE)) && level.getBlockEntity(pos) == null;
     }
 
-    private int breakBlock(Level level, BlockPos pos, int stored, int blocksToBreak) {
+    private int breakBlock(Player player, BlockPos pos, ItemStack stack, int stored, int blocksToBreak, int usagePerBlock) {
+        Level level = player.level();
         BlockState state = level.getBlockState(pos);
 
-        // FIXME: Usage of energy usage
-        if (!canMine(level, pos, state) || blocksToBreak <= 0 || stored < ENERGY_USAGE) {
+        if (!canMine(level, pos, state) || blocksToBreak <= 0 || stored < usagePerBlock) {
             return blocksToBreak;
         }
 
-        level.destroyBlock(pos, true);
+        boolean dropBlock = !hasUpgrade(stack, PaxelzUpgrades.STORAGE_LINK);
+
+        level.destroyBlock(pos, dropBlock);
+
+        if (!dropBlock && level instanceof ServerLevel serverLevel) {
+            BlockEntity blockEntity = serverLevel.getBlockEntity(pos);
+            int droppedExp = EnchantmentHelper.processBlockExperience(serverLevel, stack, state.getExpDrop(level, pos, blockEntity, player, stack));
+            handleBlockDrops(player, stack, serverLevel, Block.getDrops(state, serverLevel, pos, blockEntity), pos, state, droppedExp);
+
+            if (droppedExp > 0) {
+                state.getBlock().popExperience(serverLevel, pos, droppedExp);
+            }
+        }
+
         return --blocksToBreak;
     }
 
@@ -362,6 +404,26 @@ public class PaxelItem extends DiggerItem {
                             .append(Component.literal("FE")
                                     .withColor(FastColor.ARGB32.color(255, 245, 192, 89)))
             );
+        }
+    }
+
+    public static void handleBlockDrops(Player player, ItemStack toolStack, ServerLevel level, List<ItemStack> drops, BlockPos pos1, BlockState state, int droppedExperience) {
+        Optional<BlockPos> _linkedPos = toolStack.get(PaxelzComponents.STORAGE_LINK);
+        if (_linkedPos.isPresent()) {
+            IItemHandler itemHandler = level.getCapability(Capabilities.ItemHandler.BLOCK, _linkedPos.get(), null);
+            if (itemHandler != null) {
+                List<ItemStack> remainders = new ArrayList<>();
+                for (ItemStack stack : drops) {
+                    ItemStack remainder = ItemHandlerHelper.insertItem(itemHandler, stack, false);
+                    remainders.add(remainder);
+                }
+                for (ItemStack remainder : remainders) {
+                    Block.popResource(player.level(), pos1, remainder);
+                }
+                if (level instanceof ServerLevel serverLevel) {
+                    state.getBlock().popExperience(serverLevel, pos1, droppedExperience);
+                }
+            }
         }
     }
 

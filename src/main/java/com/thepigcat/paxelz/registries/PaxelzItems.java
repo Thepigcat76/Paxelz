@@ -35,7 +35,7 @@ public final class PaxelzItems {
     public static final DeferredItem<Item> UPGRADE_ENERGY_STORAGE = upgradeItem("upgrade_energy_storage");
     public static final DeferredItem<Item> UPGRADE_STORAGE_LINK = upgradeItem("upgrade_storage_link");
     public static final DeferredItem<Item> UPGRADE_VEIN_MINER = upgradeItem("upgrade_vein_miner");
-    public static final DeferredItem<Item> UPGRADE_WALL_PHASE = upgradeItem("upgrade_wall_phase");
+    public static final DeferredItem<Item> UPGRADE_SPELUNKER = upgradeItem("upgrade_spelunker");
 
     private static @NotNull DeferredItem<Item> upgradeItem(String name) {
         return ITEMS.registerSimpleItem(name);

@@ -7,6 +7,6 @@ import net.minecraft.world.item.Item;
 public class WallPhaseUpgrade implements Upgrade {
     @Override
     public Item upgradeItem() {
-        return PaxelzItems.UPGRADE_WALL_PHASE.get();
+        return PaxelzItems.UPGRADE_SPELUNKER.get();
     }
 }

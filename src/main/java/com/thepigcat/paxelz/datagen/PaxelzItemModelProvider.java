@@ -32,7 +32,7 @@ public final class PaxelzItemModelProvider extends ItemModelProvider {
         basicItem(PaxelzItems.UPGRADE_ENERGY_STORAGE.get());
         basicItem(PaxelzItems.UPGRADE_STORAGE_LINK.get());
         basicItem(PaxelzItems.UPGRADE_VEIN_MINER.get());
-        basicItem(PaxelzItems.UPGRADE_WALL_PHASE.get());
+        basicItem(PaxelzItems.UPGRADE_SPELUNKER.get());
     }
 
     public ItemModelBuilder handheldItem(ItemLike itemLike) {

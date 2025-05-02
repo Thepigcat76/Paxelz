@@ -16,6 +16,6 @@ public final class PaxelzUpgrades {
     public static final Supplier<EnergyStorageUpgrade> ENERGY_STORAGE = UPGRADES.register("energy_storage", () -> new EnergyStorageUpgrade());
     public static final Supplier<StorageLinkUpgrade> STORAGE_LINK = UPGRADES.register("storage_link", () -> new StorageLinkUpgrade());
     public static final Supplier<VeinMinerUpgrade> VEIN_MINER = UPGRADES.register("vein_miner", () -> new VeinMinerUpgrade());
-    public static final Supplier<WallPhaseUpgrade> WALL_PHASE = UPGRADES.register("wall_phase", () -> new WallPhaseUpgrade());
+    public static final Supplier<WallPhaseUpgrade> SPELUNKER = UPGRADES.register("wall_phase", () -> new WallPhaseUpgrade());
 
 }
