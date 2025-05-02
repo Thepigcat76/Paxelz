@@ -1,0 +1,11 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.thepigcat.paxelz.mixins",
+  "refmap": "mixins.paxelz.refmap.json",
+  "target": "@env(DEFAULT)",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "LevelRendererAccess"
+  ]
+}

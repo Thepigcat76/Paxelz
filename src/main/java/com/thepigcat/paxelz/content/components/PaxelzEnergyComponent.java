@@ -3,7 +3,6 @@ package com.thepigcat.paxelz.content.components;
 import com.thepigcat.paxelz.content.items.PaxelItem;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.common.MutableDataComponentHolder;
 import net.neoforged.neoforge.energy.ComponentEnergyStorage;
 
 public class PaxelzEnergyComponent extends ComponentEnergyStorage {
@@ -14,4 +13,5 @@ public class PaxelzEnergyComponent extends ComponentEnergyStorage {
             paxelItem.initEnergyStorage(this, parent);
         }
     }
+
 }

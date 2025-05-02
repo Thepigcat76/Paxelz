@@ -16,6 +16,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public final class PaxelzItems {
     public static final List<ItemLike> PAXELS = new ArrayList<>();
@@ -46,6 +47,7 @@ public final class PaxelzItems {
                 .component(PaxelzComponents.UPGRADES.get(), new UpgradesComponent(maxUpgrades))
                 .component(PaxelzComponents.ENERGY_STORAGE.get(), 0)
                 .component(PaxelzComponents.PREVIOUS_DAMAGE.get(), 0)
+                .component(PaxelzComponents.STORAGE_LINK, Optional.empty())
                 .attributes(DiggerItem.createAttributes(tier, 4f, -2.6f))));
         PAXELS.add(item);
         return item;

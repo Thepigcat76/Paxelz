@@ -20,6 +20,8 @@ public final class PaxelzLangProvider extends LanguageProvider {
         add("tooltip.paxelz.energy_stored", "Stored: ");
         add("tooltip.paxelz.energy_amount", "%d/%d");
 
+        add("message.paxelz.storage_link", "Storage Linked!");
+
         add(PaxelzItems.WOODEN_PAXEL.get(), "Wooden Paxel");
         add(PaxelzItems.STONE_PAXEL.get(), "Stone Paxel");
         add(PaxelzItems.IRON_PAXEL.get(), "Iron Paxel");
