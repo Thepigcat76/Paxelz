@@ -2,6 +2,7 @@ package com.thepigcat.paxelz.registries;
 
 import com.mojang.serialization.Codec;
 import com.thepigcat.paxelz.Paxelz;
+import com.thepigcat.paxelz.content.components.SpelunkerResultComponent;
 import com.thepigcat.paxelz.content.components.UpgradesComponent;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponentType;
@@ -27,4 +28,7 @@ public final class PaxelzComponents {
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<Optional<BlockPos>>> STORAGE_LINK = COMPONENTS.registerComponentType("storage_link", builder -> builder
             .persistent(BlockPos.CODEC.optionalFieldOf("linkedPos").codec())
             .networkSynchronized(ByteBufCodecs.optional(BlockPos.STREAM_CODEC)));
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<SpelunkerResultComponent>> SPELUNKER_RESULT = COMPONENTS.registerComponentType("spelunker_result", builder -> builder
+            .persistent(SpelunkerResultComponent.CODEC)
+            .networkSynchronized(SpelunkerResultComponent.STREAM_CODEC));
 }

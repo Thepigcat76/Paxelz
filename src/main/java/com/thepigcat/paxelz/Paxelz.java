@@ -3,6 +3,7 @@ package com.thepigcat.paxelz;
 import com.thepigcat.paxelz.content.components.PaxelzEnergyComponent;
 import com.thepigcat.paxelz.content.items.PaxelItem;
 import com.thepigcat.paxelz.registries.*;
+import com.thepigcat.paxelz.utils.PaxelUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -60,7 +61,7 @@ public final class Paxelz {
 
     private void onCapabilityAttached(RegisterCapabilitiesEvent event) {
         for (ItemLike item : PaxelzItems.PAXELS) {
-            event.registerItem(Capabilities.EnergyStorage.ITEM, (stack, ctx) -> stack.get(PaxelzComponents.UPGRADES.get()).hasUpgrade(PaxelzUpgrades.ENERGY_STORAGE.get())
+            event.registerItem(Capabilities.EnergyStorage.ITEM, (stack, ctx) -> PaxelUtils.hasUpgrade(stack, PaxelzUpgrades.ENERGY_STORAGE)
                     ? new PaxelzEnergyComponent(stack, PaxelzComponents.ENERGY_STORAGE.get(), 1000)
                     : null, item.asItem());
         }
@@ -72,14 +73,15 @@ public final class Paxelz {
             if (breaker instanceof Player player) {
                 ItemStack toolStack = event.getTool();
                 if (toolStack.is(PaxelzTags.Items.PAXEL)) {
-                    if (toolStack.get(PaxelzComponents.UPGRADES).hasUpgrade(PaxelzUpgrades.STORAGE_LINK.get())) {
+                    if (PaxelUtils.hasUpgrade(toolStack, PaxelzUpgrades.STORAGE_LINK) && PaxelUtils.hasLinkedStorage(toolStack)) {
                         BlockState state = event.getState();
                         ServerLevel level = event.getLevel();
                         BlockPos pos1 = event.getPos();
                         List<ItemEntity> drops = event.getDrops();
                         int droppedExperience = event.getDroppedExperience();
 
-                        PaxelItem.handleBlockDrops(player, toolStack, level, drops.stream().map(ItemEntity::getItem).toList(), pos1, state, droppedExperience);
+                        PaxelUtils.handleBlockDrops(player, toolStack, level, drops.stream().map(ItemEntity::getItem).toList(), pos1, state, droppedExperience);
+                        event.setCanceled(true);
                     }
                 }
             }
