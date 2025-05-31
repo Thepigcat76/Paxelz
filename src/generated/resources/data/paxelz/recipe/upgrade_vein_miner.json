@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "paxelz:upgrade_base"
+    },
+    {
+      "item": "minecraft:diamond_pickaxe"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "paxelz:upgrade_vein_miner"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "A": {
+      "item": "minecraft:iron_axe"
+    },
+    "I": {
+      "item": "minecraft:stick"
+    },
+    "P": {
+      "item": "minecraft:iron_pickaxe"
+    },
+    "S": {
+      "item": "minecraft:iron_shovel"
+    }
+  },
+  "pattern": [
+    "ASP",
+    " I ",
+    " I "
+  ],
+  "result": {
+    "count": 1,
+    "id": "paxelz:iron_paxel"
+  }
+}
