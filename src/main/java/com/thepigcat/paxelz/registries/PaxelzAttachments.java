@@ -13,6 +13,5 @@ public final class PaxelzAttachments {
 
     public static final Supplier<AttachmentType<PassThroughBlocksAttachment>> PASS_THROUGH_BLOCKS = ATTACHMENTS.register("pass_through_blocks",
             () -> AttachmentType.builder(() -> new PassThroughBlocksAttachment())
-                    .serialize(PassThroughBlocksAttachment.CODEC)
                     .build());
 }

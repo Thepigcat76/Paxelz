@@ -8,4 +8,5 @@ import java.util.Set;
 
 public final class ClientWallPhaseManager {
     public static final Set<BlockPos> WALL_PHASE_BLOCKS = new HashSet<>();
+    public static int WALL_PHASE_TICKER = 0;
 }

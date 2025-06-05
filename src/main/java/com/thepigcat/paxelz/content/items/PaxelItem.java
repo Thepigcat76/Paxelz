@@ -2,6 +2,7 @@ package com.thepigcat.paxelz.content.items;
 
 import com.thepigcat.paxelz.PaxelzRegistries;
 import com.thepigcat.paxelz.PaxelzTags;
+import com.thepigcat.paxelz.WallPhaseManager;
 import com.thepigcat.paxelz.api.upgrades.Upgrade;
 import com.thepigcat.paxelz.client.ClientWallPhaseManager;
 import com.thepigcat.paxelz.content.attachments.PassThroughBlocksAttachment;
@@ -45,6 +46,7 @@ import net.neoforged.neoforge.common.ItemAbility;
 import net.neoforged.neoforge.energy.IEnergyStorage;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemHandlerHelper;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.*;
 import java.util.function.*;
@@ -139,13 +141,25 @@ public class PaxelItem extends DiggerItem {
         }
 
         if (hasUpgrade(itemInHand, PaxelzUpgrades.SPELUNKER) && !context.getPlayer().isShiftKeyDown()) {
-            PassThroughBlocksAttachment blocks = PassThroughBlocksAttachment.withBlocks(get3x3MiningArea(context.getClickedPos(), context.getClickedFace()));
+            PassThroughBlocksAttachment blocks = PassThroughBlocksAttachment.withBlocks(get3x3x3PhaseArea(context.getClickedPos(), context.getClickedFace()));
             context.getPlayer().setData(PaxelzAttachments.PASS_THROUGH_BLOCKS.get(), blocks);
             if (context.getLevel().isClientSide()) {
                 ClientWallPhaseManager.WALL_PHASE_BLOCKS.clear();
                 ClientWallPhaseManager.WALL_PHASE_BLOCKS.addAll(blocks.blocks());
             }
+            for (BlockPos pos : blocks.blocks()) {
+                context.getLevel().sendBlockUpdated(pos, context.getLevel().getBlockState(pos), context.getLevel().getBlockState(pos), 3);
+                context.getLevel().updateNeighborsAt(pos, context.getLevel().getBlockState(pos).getBlock());
+                context.getLevel().setBlocksDirty(pos, context.getLevel().getBlockState(pos), context.getLevel().getBlockState(pos));
+                context.getLevel().getChunkAt(pos).setUnsaved(true);
+            }
             context.getPlayer().playSound(SoundEvents.EXPERIENCE_ORB_PICKUP);
+            context.getPlayer().getCooldowns().addCooldown(context.getItemInHand().getItem(), 200);
+            if (context.getLevel().isClientSide()) {
+                ClientWallPhaseManager.WALL_PHASE_TICKER = 160;
+            } else {
+                WallPhaseManager.WALL_PHASE_TICKER.put(context.getPlayer().getUUID(), 160);
+            }
             return InteractionResult.SUCCESS;
         }
 
