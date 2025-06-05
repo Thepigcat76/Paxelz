@@ -1,0 +1,36 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "paxelz:iron_paxel"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    },
+    "has_tools": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "minecraft:iron_axe",
+              "minecraft:iron_shovel",
+              "minecraft:iron_pickaxe"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_tools"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "paxelz:iron_paxel"
+    ]
+  }
+}

@@ -2,6 +2,7 @@ package com.thepigcat.paxelz.registries;
 
 import com.thepigcat.paxelz.PaxelzTags;
 import com.thepigcat.paxelz.Paxelz;
+import com.thepigcat.paxelz.content.components.SpelunkerResultComponent;
 import com.thepigcat.paxelz.content.components.UpgradesComponent;
 import com.thepigcat.paxelz.content.items.PaxelItem;
 import net.minecraft.core.component.DataComponents;
@@ -15,6 +16,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -48,6 +50,7 @@ public final class PaxelzItems {
                 .component(PaxelzComponents.ENERGY_STORAGE.get(), 0)
                 .component(PaxelzComponents.PREVIOUS_DAMAGE.get(), 0)
                 .component(PaxelzComponents.STORAGE_LINK, Optional.empty())
+                .component(PaxelzComponents.SPELUNKER_RESULT, new SpelunkerResultComponent(Collections.emptyList()))
                 .attributes(DiggerItem.createAttributes(tier, 4f, -2.6f))));
         PAXELS.add(item);
         return item;

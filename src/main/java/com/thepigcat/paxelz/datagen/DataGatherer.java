@@ -16,6 +16,6 @@ public final class DataGatherer {
 
         PaxelzTagsProvider.Blocks blockTagsProvider = event.addProvider(new PaxelzTagsProvider.Blocks(generator.getPackOutput(), event.getLookupProvider(), event.getExistingFileHelper()));
         event.addProvider(new PaxelzTagsProvider.Items(generator.getPackOutput(), event.getLookupProvider(), blockTagsProvider.contentsGetter()));
-
+        event.addProvider(new PaxelzRecipeProvider(generator.getPackOutput(), event.getLookupProvider()));
     }
 }
