@@ -4,14 +4,14 @@ import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.core.Registry;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public final class CodecUtils {
     public static <R> Codec<R> registryCodec(Registry<R> registry) {
-        return ResourceLocation.CODEC.xmap(registry::get, registry::getKey);
+        return Identifier.CODEC.xmap(registry::getValue, registry::getKey);
     }
 
     public static <R> StreamCodec<ByteBuf, R> registryStreamCodec(Registry<R> registry) {
-        return ResourceLocation.STREAM_CODEC.map(registry::get, registry::getKey);
+        return Identifier.STREAM_CODEC.map(registry::getValue, registry::getKey);
     }
 }

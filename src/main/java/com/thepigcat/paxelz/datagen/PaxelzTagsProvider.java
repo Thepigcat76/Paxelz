@@ -5,19 +5,18 @@ import com.thepigcat.paxelz.Paxelz;
 import com.thepigcat.paxelz.registries.PaxelzItems;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
-import net.minecraft.data.tags.ItemTagsProvider;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.common.data.BlockTagsProvider;
-import net.neoforged.neoforge.common.data.ExistingFileHelper;
+import net.neoforged.neoforge.common.data.ItemTagsProvider;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.concurrent.CompletableFuture;
 
 public final class PaxelzTagsProvider {
     public static final class Items extends ItemTagsProvider {
-        public Items(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider, CompletableFuture<TagLookup<Block>> blockTags) {
-            super(output, lookupProvider, blockTags);
+        public Items(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider) {
+            super(output, lookupProvider, Paxelz.MODID);
         }
 
         @Override
@@ -33,8 +32,8 @@ public final class PaxelzTagsProvider {
     }
 
     public static final class Blocks extends BlockTagsProvider {
-        public Blocks(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider, @Nullable ExistingFileHelper existingFileHelper) {
-            super(output, lookupProvider, Paxelz.MODID, existingFileHelper);
+        public Blocks(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider) {
+            super(output, lookupProvider, Paxelz.MODID);
         }
 
         @SuppressWarnings("unchecked")

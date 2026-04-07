@@ -15,6 +15,7 @@ import net.minecraft.network.codec.StreamCodec;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 public record UpgradesComponent(List<Upgrade> upgrades, int maxUpgrades) {
     public static final Codec<UpgradesComponent> CODEC = RecordCodecBuilder.create(inst -> inst.group(
@@ -55,15 +56,15 @@ public record UpgradesComponent(List<Upgrade> upgrades, int maxUpgrades) {
         return this.upgrades.contains(upgrade);
     }
 
-    public void addTooltip(List<Component> components) {
-        components.add(Component.translatable("tooltip.paxelz.paxel_item.upgrades")
+    public void addTooltip(Consumer<Component> builder) {
+        builder.accept(Component.translatable("tooltip.paxelz.paxel_item.upgrades")
                 .withStyle(this.upgrades.isEmpty() ? ChatFormatting.RED : (this.upgrades.size() == this.maxUpgrades ? ChatFormatting.GREEN : ChatFormatting.GOLD)));
         for (int i = 0; i < this.maxUpgrades; i++) {
             Upgrade upgrade = PaxelzUpgrades.EMPTY.get();
             if (i < this.upgrades.size()) {
                 upgrade = this.upgrades.get(i);
             }
-            components.add(Component.literal("| [%s] - ".formatted(upgrade.isEmpty() ? " " : "+")).append(Component.translatable("upgrade.paxelz." + PaxelzRegistries.UPGRADE.getKey(upgrade).getPath())).withStyle(upgrade.isEmpty() ? ChatFormatting.RED : ChatFormatting.GREEN));
+            builder.accept(Component.literal("| [%s] - ".formatted(upgrade.isEmpty() ? " " : "+")).append(upgrade.getDisplayName()).withStyle(upgrade.isEmpty() ? ChatFormatting.RED : ChatFormatting.GREEN));
         }
     }
 

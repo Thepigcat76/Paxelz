@@ -37,6 +37,11 @@ public class VeinMinerUpgrade implements Upgrade {
         veinMine(player, pos, stack, PaxelUtils::canBeDamaged, PaxelUtils::damageItem);
     }
 
+    @Override
+    public boolean isIncompatible(Upgrade other) {
+        return other == PaxelzUpgrades.AREA_MINING.get();
+    }
+
     private void veinMine(Player player, BlockPos pos, ItemStack stack, Predicate<ItemStack> canBeDamagedFunction, BiConsumer<Player, ItemStack> damageFunction) {
         Set<BlockPos> known = new ObjectArraySet<>();
         Level level = player.level();

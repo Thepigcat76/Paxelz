@@ -10,7 +10,7 @@ public final class PaxelzTags {
         public static final TagKey<Block> PAXEL_MINEABLE = bind("paxel_mineable");
 
         public static TagKey<Block> bind(String value) {
-            return TagKey.create(Registries.BLOCK, Paxelz.rl(value));
+            return TagKey.create(Registries.BLOCK, Paxelz.id(value));
         }
     }
 
@@ -18,7 +18,7 @@ public final class PaxelzTags {
         public static final TagKey<Item> PAXEL = bind("paxel");
 
         public static TagKey<Item> bind(String value) {
-            return TagKey.create(Registries.ITEM, Paxelz.rl(value));
+            return TagKey.create(Registries.ITEM, Paxelz.id(value));
         }
     }
 }

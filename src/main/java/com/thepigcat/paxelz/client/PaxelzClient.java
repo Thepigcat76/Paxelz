@@ -2,16 +2,20 @@ package com.thepigcat.paxelz.client;
 
 import com.thepigcat.paxelz.PaxelzTags;
 import com.thepigcat.paxelz.WallPhaseManager;
+import com.thepigcat.paxelz.client.items.ClientPaxelTooltipComponent;
 import com.thepigcat.paxelz.content.attachments.PassThroughBlocksAttachment;
 import com.thepigcat.paxelz.content.items.PaxelItem;
+import com.thepigcat.paxelz.content.items.PaxelTooltipComponent;
 import com.thepigcat.paxelz.mixins.LevelRendererAccess;
 import com.thepigcat.paxelz.registries.PaxelzAttachments;
 import com.thepigcat.paxelz.registries.PaxelzComponents;
 import com.thepigcat.paxelz.registries.PaxelzUpgrades;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.client.renderer.state.level.BlockOutlineRenderState;
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
@@ -19,8 +23,11 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.client.event.ExtractBlockOutlineRenderStateEvent;
+import net.neoforged.neoforge.client.event.RegisterClientTooltipComponentFactoriesEvent;
 import net.neoforged.neoforge.client.event.RenderBlockScreenEffectEvent;
-import net.neoforged.neoforge.client.event.RenderHighlightEvent;
+import net.neoforged.neoforge.client.gui.ConfigurationScreen;
+import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
@@ -37,6 +44,13 @@ public final class PaxelzClient {
         NeoForge.EVENT_BUS.addListener(this::onPlayerLoggedIn);
         NeoForge.EVENT_BUS.addListener(this::renderBlockOverlay);
         NeoForge.EVENT_BUS.addListener(this::playerTick);
+        eventBus.addListener(this::registerClientTooltips);
+
+        modContainer.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
+    }
+
+    private void registerClientTooltips(RegisterClientTooltipComponentFactoriesEvent event) {
+        event.register(PaxelTooltipComponent.class, ClientPaxelTooltipComponent::new);
     }
 
     private void renderBlockOverlay(RenderBlockScreenEffectEvent event) {
@@ -47,27 +61,44 @@ public final class PaxelzClient {
         }
     }
 
-    private void renderHitbox(RenderHighlightEvent.Block event) {
-        LocalPlayer player = Minecraft.getInstance().player;
-        ItemStack itemStack = player.getMainHandItem();
-        if (!player.isShiftKeyDown() && itemStack.is(PaxelzTags.Items.PAXEL)) {
-            if (itemStack.get(PaxelzComponents.UPGRADES).hasUpgrade(PaxelzUpgrades.AREA_MINING.get())) {
-                BlockPos blockPos = event.getTarget().getBlockPos();
-                Vec3 cameraPos = event.getCamera().getPosition();
-                Iterable<BlockPos> positions = PaxelItem.get3x3MiningArea(blockPos, event.getTarget().getDirection());
-                for (BlockPos pos : positions) {
-                    ((LevelRendererAccess) event.getLevelRenderer()).callRenderHitOutline(
-                            event.getPoseStack(),
-                            event.getMultiBufferSource().getBuffer(RenderType.lines()),
-                            event.getCamera().getEntity(),
-                            cameraPos.x(), cameraPos.y(), cameraPos.z(),
-                            pos,
-                            Minecraft.getInstance().level.getBlockState(pos)
-                    );
+    private void renderHitbox(ExtractBlockOutlineRenderStateEvent event) {
+        event.addCustomRenderer((renderState, buffer, poseStack, translucentPass, levelRenderState) -> {
+            LocalPlayer player = Minecraft.getInstance().player;
+            ItemStack itemStack = player.getMainHandItem();
+            if (!player.isShiftKeyDown() && itemStack.is(PaxelzTags.Items.PAXEL)) {
+                if (itemStack.get(PaxelzComponents.UPGRADES).hasUpgrade(PaxelzUpgrades.AREA_MINING.get())) {
+                    BlockPos blockPos = event.getHitResult().getBlockPos();
+                    Vec3 cameraPos = event.getCamera().position();
+
+                    Iterable<BlockPos> positions = PaxelItem.get3x3MiningArea(blockPos, event.getHitResult().getDirection());
+                    for (BlockPos pos : positions) {
+                        int outlineColor = renderState.highContrast() ? -11010079 : ARGB.black(102);
+                        ((LevelRendererAccess) event.getLevelRenderer()).callRenderHitOutline(
+                                poseStack,
+                                buffer.getBuffer(RenderTypes.LINES),
+                                cameraPos.x,
+                                cameraPos.y,
+                                cameraPos.z,
+                                new BlockOutlineRenderState(
+                                        pos,
+                                        renderState.isTranslucent(),
+                                        renderState.highContrast(),
+                                        renderState.shape(),
+                                        renderState.collisionShape(),
+                                        renderState.occlusionShape(),
+                                        renderState.interactionShape(),
+                                        renderState.customRenderers()
+                                ),
+                                outlineColor,
+                                Minecraft.getInstance().gameRenderer.getGameRenderState().windowRenderState.appropriateLineWidth
+                        );
+                    }
+                    event.setCanceled(true);
                 }
-                event.setCanceled(true);
             }
-        }
+            return false;
+        });
+
     }
 
     private void playerTick(PlayerTickEvent.Post event) {
@@ -101,7 +132,7 @@ public final class PaxelzClient {
             level.sendBlockUpdated(pos, level.getBlockState(pos), level.getBlockState(pos), 3);
             level.updateNeighborsAt(pos, level.getBlockState(pos).getBlock());
             level.setBlocksDirty(pos, level.getBlockState(pos), level.getBlockState(pos));
-            level.getChunkAt(pos).setUnsaved(true);
+            level.getChunkAt(pos).markUnsaved();
         }
     }
 

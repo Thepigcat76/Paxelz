@@ -14,7 +14,7 @@ import java.util.Optional;
 
 public class StorageLinkUpgrade implements Upgrade {
     public boolean linkStorage(UseOnContext context, ItemStack itemInHand) {
-        if (context.getLevel().getCapability(Capabilities.ItemHandler.BLOCK, context.getClickedPos(), null) != null) {
+        if (context.getLevel().getCapability(Capabilities.Item.BLOCK, context.getClickedPos(), null) != null) {
             itemInHand.set(PaxelzComponents.STORAGE_LINK.get(), Optional.of(context.getClickedPos()));
             if (!context.getLevel().isClientSide()) {
                 context.getPlayer().sendSystemMessage(Component.translatable("message.paxelz.storage_link").withStyle(ChatFormatting.YELLOW));

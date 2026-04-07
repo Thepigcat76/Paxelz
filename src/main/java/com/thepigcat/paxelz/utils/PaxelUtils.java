@@ -14,9 +14,12 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.energy.IEnergyStorage;
-import net.neoforged.neoforge.items.IItemHandler;
-import net.neoforged.neoforge.items.ItemHandlerHelper;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.access.ItemAccess;
+import net.neoforged.neoforge.transfer.energy.EnergyHandler;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.item.ItemUtil;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,11 +34,11 @@ public final class PaxelUtils {
     public static void handleBlockDrops(Player player, ItemStack toolStack, ServerLevel level, List<ItemStack> drops, BlockPos pos1, BlockState state, int droppedExperience) {
         Optional<BlockPos> _linkedPos = toolStack.get(PaxelzComponents.STORAGE_LINK);
         if (_linkedPos.isPresent()) {
-            IItemHandler itemHandler = level.getCapability(Capabilities.ItemHandler.BLOCK, _linkedPos.get(), null);
+            ResourceHandler<ItemResource> itemHandler = level.getCapability(Capabilities.Item.BLOCK, _linkedPos.get(), null);
             if (itemHandler != null) {
                 List<ItemStack> remainders = new ArrayList<>();
                 for (ItemStack stack : drops) {
-                    ItemStack remainder = ItemHandlerHelper.insertItem(itemHandler, stack, false);
+                    ItemStack remainder = ItemUtil.insertItemReturnRemaining(itemHandler, stack, false, null);
                     remainders.add(remainder);
                 }
                 for (ItemStack remainder : remainders) {
@@ -61,18 +64,21 @@ public final class PaxelUtils {
     }
 
     public static boolean canBeDamaged(ItemStack itemStack) {
-        if (hasUpgrade(itemStack, PaxelzUpgrades.ENERGY_STORAGE)) {
-            IEnergyStorage energyStorage = itemStack.getCapability(Capabilities.EnergyStorage.ITEM);
-            return energyStorage.getEnergyStored() >= PaxelItem.ENERGY_USAGE;
+        if (!itemStack.isEmpty() && hasUpgrade(itemStack, PaxelzUpgrades.ENERGY_STORAGE)) {
+            EnergyHandler energyHandler = itemStack.getCapability(Capabilities.Energy.ITEM, ItemAccess.forStack(itemStack));
+            return energyHandler.getAmountAsInt() >= PaxelItem.ENERGY_USAGE;
         } else {
             return itemStack.getMaxDamage() - itemStack.getDamageValue() >= 1;
         }
     }
 
     public static void damageItem(Player player1, ItemStack itemStack) {
-        if (hasUpgrade(itemStack, PaxelzUpgrades.ENERGY_STORAGE)) {
-            IEnergyStorage energyStorage = itemStack.getCapability(Capabilities.EnergyStorage.ITEM);
-            energyStorage.extractEnergy(PaxelItem.ENERGY_USAGE, false);
+        if (!itemStack.isEmpty() && hasUpgrade(itemStack, PaxelzUpgrades.ENERGY_STORAGE)) {
+            EnergyHandler energyHandler = itemStack.getCapability(Capabilities.Energy.ITEM, ItemAccess.forStack(itemStack));
+            try (Transaction tx = Transaction.openRoot()) {
+                energyHandler.extract(PaxelItem.ENERGY_USAGE, tx);
+                tx.commit();
+            }
         } else {
             itemStack.hurtAndBreak(1, player1, EquipmentSlot.MAINHAND);
         }

@@ -2,29 +2,38 @@ package com.thepigcat.paxelz.content.items;
 
 import com.thepigcat.paxelz.PaxelzRegistries;
 import com.thepigcat.paxelz.PaxelzTags;
+import com.thepigcat.paxelz.WallPhaseManager;
 import com.thepigcat.paxelz.api.upgrades.Upgrade;
+import com.thepigcat.paxelz.client.ClientWallPhaseManager;
+import com.thepigcat.paxelz.content.attachments.PassThroughBlocksAttachment;
 import com.thepigcat.paxelz.content.components.UpgradesComponent;
+import com.thepigcat.paxelz.registries.PaxelzAttachments;
 import com.thepigcat.paxelz.registries.PaxelzComponents;
 import com.thepigcat.paxelz.registries.PaxelzUpgrades;
 import com.thepigcat.paxelz.utils.PaxelUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.util.FastColor;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.SlotAccess;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.item.DiggerItem;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Tier;
-import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.inventory.tooltip.TooltipComponent;
+import net.minecraft.world.item.*;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
+import net.minecraft.world.item.component.Tool;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.ClipContext;
@@ -34,21 +43,23 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.common.ItemAbilities;
-import net.neoforged.neoforge.common.ItemAbility;
-import net.neoforged.neoforge.energy.IEnergyStorage;
+import net.neoforged.neoforge.transfer.access.ItemAccess;
+import net.neoforged.neoforge.transfer.energy.EnergyHandler;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
+import org.jspecify.annotations.NonNull;
 
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 import java.util.function.*;
 
-public class PaxelItem extends DiggerItem {
-    public static final int COLOR = FastColor.ARGB32.color(255, 215, 0, 0);
+public class PaxelItem extends Item {
+    public static final int COLOR = ARGB.color(255, 215, 0, 0);
     public static final int ENERGY_USAGE = 8;
-    private final Tier tier;
+    private final ToolMaterial material;
 
-    public PaxelItem(Tier tier, Properties properties) {
-        super(tier, PaxelzTags.Blocks.PAXEL_MINEABLE, properties);
-        this.tier = tier;
+    public PaxelItem(ToolMaterial material, Properties properties) {
+        super(properties);
+        this.material = material;
     }
 
     @Override
@@ -63,8 +74,14 @@ public class PaxelItem extends DiggerItem {
                     }
                 }
 
-                if (upgrade.isEmpty()) {
+                // Check if upgrade is valid and not already installed
+                if (upgrade.isEmpty() || upgrades.upgrades().contains(upgrade)) {
                     return false;
+                } else {
+                    // Check for incompatability
+                    for (Upgrade upgrade1 : upgrades.upgrades()) {
+                        if (upgrade1.isIncompatible(upgrade)) return false;
+                    }
                 }
 
                 if (action == ClickAction.SECONDARY) {
@@ -104,30 +121,42 @@ public class PaxelItem extends DiggerItem {
             }
         }
 
-        if (PaxelUtils.hasUpgrade(itemInHand, PaxelzUpgrades.SPELUNKER) && !context.getPlayer().isShiftKeyDown()) {
-            PaxelzUpgrades.SPELUNKER.get().performSpelunking(context.getPlayer(), context.getItemInHand());
-            context.getPlayer().playSound(SoundEvents.EXPERIENCE_ORB_PICKUP);
-            return InteractionResult.SUCCESS;
-        }
+//        if (PaxelUtils.hasUpgrade(itemInHand, PaxelzUpgrades.WALL_PHASE) && !context.getPlayer().isShiftKeyDown()) {
+//            PassThroughBlocksAttachment blocks = PassThroughBlocksAttachment.withBlocks(get3x3x3PhaseArea(context.getClickedPos(), context.getClickedFace()));
+//            context.getPlayer().setData(PaxelzAttachments.PASS_THROUGH_BLOCKS.get(), blocks);
+//            if (context.getLevel().isClientSide()) {
+//                ClientWallPhaseManager.WALL_PHASE_BLOCKS.clear();
+//                ClientWallPhaseManager.WALL_PHASE_BLOCKS.addAll(blocks.blocks());
+//            }
+//            for (BlockPos pos : blocks.blocks()) {
+//                context.getLevel().sendBlockUpdated(pos, context.getLevel().getBlockState(pos), context.getLevel().getBlockState(pos), 3);
+//                context.getLevel().updateNeighborsAt(pos, context.getLevel().getBlockState(pos).getBlock());
+//                context.getLevel().setBlocksDirty(pos, context.getLevel().getBlockState(pos), context.getLevel().getBlockState(pos));
+//                context.getLevel().getChunkAt(pos).markUnsaved();
+//            }
+//            context.getPlayer().playSound(SoundEvents.EXPERIENCE_ORB_PICKUP);
+//            context.getPlayer().getCooldowns().addCooldown(context.getItemInHand(), 200);
+//            if (context.getLevel().isClientSide()) {
+//                ClientWallPhaseManager.WALL_PHASE_TICKER = 160;
+//            } else {
+//                WallPhaseManager.WALL_PHASE_TICKER.put(context.getPlayer().getUUID(), 160);
+//            }
+//            return InteractionResult.SUCCESS;
+//        }
 
         return InteractionResult.FAIL;
     }
 
-    @Override
-    public boolean canPerformAction(ItemStack stack, ItemAbility itemAbility) {
-        if (PaxelUtils.hasUpgrade(stack, PaxelzUpgrades.ENERGY_STORAGE)) {
-            IEnergyStorage energyStorage = stack.getCapability(Capabilities.EnergyStorage.ITEM);
-            if (energyStorage.getEnergyStored() < ENERGY_USAGE) {
-                return false;
-            }
-        }
-        return ItemAbilities.DEFAULT_PICKAXE_ACTIONS.contains(itemAbility) || ItemAbilities.DEFAULT_AXE_ACTIONS.contains(itemAbility) || ItemAbilities.DEFAULT_SHOVEL_ACTIONS.contains(itemAbility);
-    }
-
-    @Override
-    public Tier getTier() {
-        return tier;
-    }
+//    @Override
+//    public boolean canPerformAction(ItemInstance stack, ItemAbility itemAbility) {
+//        if (PaxelUtils.hasUpgrade(stack, PaxelzUpgrades.ENERGY_STORAGE)) {
+//            IEnergyStorage energyStorage = stack.getCapability(Capabilities.EnergyStorage.ITEM);
+//            if (energyStorage.getEnergyStored() < ENERGY_USAGE) {
+//                return false;
+//            }
+//        }
+//        return ItemAbilities.DEFAULT_PICKAXE_ACTIONS.contains(itemAbility) || ItemAbilities.DEFAULT_AXE_ACTIONS.contains(itemAbility) || ItemAbilities.DEFAULT_SHOVEL_ACTIONS.contains(itemAbility);
+//    }
 
     @Override
     public boolean mineBlock(ItemStack stack, Level level, BlockState state, BlockPos pos, LivingEntity miningEntity) {
@@ -135,8 +164,8 @@ public class PaxelItem extends DiggerItem {
             boolean hasUpgrade = PaxelUtils.hasUpgrade(stack, PaxelzUpgrades.ENERGY_STORAGE);
             int energyStored = 0;
             if (hasUpgrade) {
-                IEnergyStorage energyStorage = stack.getCapability(Capabilities.EnergyStorage.ITEM);
-                energyStored = energyStorage.getEnergyStored();
+                EnergyHandler energyHandler = stack.getCapability(Capabilities.Energy.ITEM, ItemAccess.forStack(stack));
+                energyStored = energyHandler.getAmountAsInt();
             }
 
             if (PaxelUtils.hasUpgrade(stack, PaxelzUpgrades.VEIN_MINER) && !PaxelUtils.hasUpgrade(stack, PaxelzUpgrades.AREA_MINING)) {
@@ -223,46 +252,62 @@ public class PaxelItem extends DiggerItem {
     }
 
     @Override
-    public boolean hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
+    public void hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
         if (PaxelUtils.hasUpgrade(stack, PaxelzUpgrades.ENERGY_STORAGE)) {
             modifyEnergyAttributes(stack);
         }
-        return super.hurtEnemy(stack, target, attacker);
     }
 
-    public void initEnergyStorage(IEnergyStorage energyStorage, ItemStack itemStack) {
-        if (energyStorage.getEnergyStored() < ENERGY_USAGE) {
-            itemStack.remove(DataComponents.TOOL);
+    public void initEnergyStorage(EnergyHandler energyHandler, ItemStack stack) {
+        if (energyHandler.getAmountAsInt() < ENERGY_USAGE) {
+            removeToolsAndAttributes(stack);
         } else {
-            itemStack.set(DataComponents.TOOL, tier.createToolProperties(PaxelzTags.Blocks.PAXEL_MINEABLE));
+            addToolsAndAttributes(this.material, stack);
         }
     }
 
     public void modifyEnergyAttributes(ItemStack stack) {
-        IEnergyStorage energyStorage = stack.getCapability(Capabilities.EnergyStorage.ITEM);
+        EnergyHandler energyHandler = stack.getCapability(Capabilities.Energy.ITEM, ItemAccess.forStack(stack));
 
-        int oldAmount = energyStorage.getEnergyStored();
-        energyStorage.extractEnergy(ENERGY_USAGE, false);
-
-        stack.set(DataComponents.ATTRIBUTE_MODIFIERS, DiggerItem.createAttributes(
-                tier,
-                energyStorage.getEnergyStored() >= ENERGY_USAGE
-                        ? 4.0f
-                        : -1f,
-                -2.6f
-        ));
-        if (energyStorage.getEnergyStored() < ENERGY_USAGE) {
-            stack.remove(DataComponents.TOOL);
-        } else if (oldAmount < ENERGY_USAGE) {
-            stack.set(DataComponents.TOOL, tier.createToolProperties(PaxelzTags.Blocks.PAXEL_MINEABLE));
+        int oldAmount = energyHandler.getAmountAsInt();
+        try (Transaction tx = Transaction.openRoot()) {
+            energyHandler.extract(ENERGY_USAGE, tx);
+            tx.commit();
         }
+
+        if (energyHandler.getAmountAsInt() < ENERGY_USAGE) {
+            removeToolsAndAttributes(stack);
+        } else if (oldAmount < ENERGY_USAGE) {
+            addToolsAndAttributes(this.material, stack);
+        }
+    }
+
+    public static void addToolsAndAttributes(ToolMaterial material, ItemStack stack) {
+        HolderGetter<Block> registrationLookup = BuiltInRegistries.BLOCK;
+        stack.set(DataComponents.ATTRIBUTE_MODIFIERS, createToolAttributes(material, 4f, -2.6f));
+        stack.set(DataComponents.TOOL, new Tool(List.of(
+                Tool.Rule.deniesDrops(registrationLookup.getOrThrow(material.incorrectBlocksForDrops())),
+                Tool.Rule.minesAndDrops(registrationLookup.getOrThrow(PaxelzTags.Blocks.PAXEL_MINEABLE), material.speed())
+        ), 1.0F, 1, true));
+    }
+
+    public static void removeToolsAndAttributes(ItemStack stack) {
+        stack.set(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY);
+        stack.remove(DataComponents.TOOL);
+    }
+
+    private static ItemAttributeModifiers createToolAttributes(ToolMaterial material, float attackDamageBaseline, float attackSpeedBaseline) {
+        return ItemAttributeModifiers.builder()
+                .add(Attributes.ATTACK_DAMAGE, new AttributeModifier(Item.BASE_ATTACK_DAMAGE_ID, attackDamageBaseline + material.attackDamageBonus(), AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND)
+                .add(Attributes.ATTACK_SPEED, new AttributeModifier(Item.BASE_ATTACK_SPEED_ID, attackSpeedBaseline, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND)
+                .build();
     }
 
     @Override
     public int getBarWidth(ItemStack stack) {
         if (PaxelUtils.hasUpgrade(stack, PaxelzUpgrades.ENERGY_STORAGE)) {
-            IEnergyStorage energyStorage = stack.getCapability(Capabilities.EnergyStorage.ITEM);
-            float ratio = (float) energyStorage.getEnergyStored() / energyStorage.getMaxEnergyStored();
+            EnergyHandler energyHandler = stack.getCapability(Capabilities.Energy.ITEM, ItemAccess.forStack(stack));
+            float ratio = (float) energyHandler.getAmountAsInt() / energyHandler.getCapacityAsInt();
             return Math.round(13.0F - ((1 - ratio) * 13.0F));
         }
         return super.getBarWidth(stack);
@@ -282,31 +327,39 @@ public class PaxelItem extends DiggerItem {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
-        if (PaxelUtils.hasUpgrade(stack, PaxelzUpgrades.ENERGY_STORAGE)) {
-            addEnergyTooltip(tooltipComponents, stack);
-        }
-        if (stack.has(PaxelzComponents.UPGRADES.get())) {
-            UpgradesComponent upgradesComponent = stack.get(PaxelzComponents.UPGRADES.get());
-            if (upgradesComponent.maxUpgrades() != 0) {
-                upgradesComponent.addTooltip(tooltipComponents);
-            }
-        }
+    public @NonNull Optional<TooltipComponent> getTooltipImage(ItemStack itemStack) {
+        return Optional.ofNullable(itemStack.get(PaxelzComponents.UPGRADES).maxUpgrades() > 0 ? new PaxelTooltipComponent(itemStack.get(PaxelzComponents.UPGRADES)) : null);
     }
 
-    private static void addEnergyTooltip(List<Component> tooltip, ItemStack itemStack) {
-        IEnergyStorage energyStorage = itemStack.getCapability(Capabilities.EnergyStorage.ITEM);
-        if (energyStorage != null) {
-            tooltip.add(
+    //    @Override
+//    public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> builder, TooltipFlag tooltipFlag) {
+//        if (PaxelUtils.hasUpgrade(stack, PaxelzUpgrades.ENERGY_STORAGE)) {
+//            addEnergyTooltip(builder, stack);
+//        }
+//        if (stack.has(PaxelzComponents.UPGRADES.get())) {
+//            UpgradesComponent upgradesComponent = stack.get(PaxelzComponents.UPGRADES.get());
+//            if (upgradesComponent.maxUpgrades() != 0) {
+//                upgradesComponent.addTooltip(builder);
+//            }
+//        }
+///    }
+
+    private static void addEnergyTooltip(Consumer<Component> tooltip, ItemStack itemStack) {
+        EnergyHandler energyHandler = itemStack.getCapability(Capabilities.Energy.ITEM, ItemAccess.forStack(itemStack));
+        if (energyHandler != null) {
+            tooltip.accept(
                     Component.translatable("tooltip.paxelz.energy_stored")
                             .withStyle(ChatFormatting.GRAY)
-                            .append(Component.translatable("tooltip.paxelz.energy_amount", energyStorage.getEnergyStored(), energyStorage.getMaxEnergyStored())
-                                    .withColor(FastColor.ARGB32.color(255, 245, 192, 89)))
+                            .append(Component.translatable("tooltip.paxelz.energy_amount", energyHandler.getAmountAsInt(), energyHandler.getCapacityAsInt())
+                                    .withColor(ARGB.color(255, 245, 192, 89)))
                             .append(" ")
                             .append(Component.literal("FE")
-                                    .withColor(FastColor.ARGB32.color(255, 245, 192, 89)))
+                                    .withColor(ARGB.color(255, 245, 192, 89)))
             );
         }
     }
 
+    public ToolMaterial getMaterial() {
+        return this.material;
+    }
 }

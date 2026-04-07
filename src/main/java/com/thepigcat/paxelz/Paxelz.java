@@ -1,25 +1,21 @@
 package com.thepigcat.paxelz;
 
 import com.thepigcat.paxelz.content.components.PaxelzEnergyComponent;
-import com.thepigcat.paxelz.content.items.PaxelItem;
 import com.thepigcat.paxelz.registries.*;
 import com.thepigcat.paxelz.utils.PaxelUtils;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.level.BlockDropsEvent;
-import net.neoforged.neoforge.items.IItemHandler;
-import net.neoforged.neoforge.items.ItemHandlerHelper;
 import net.neoforged.neoforge.registries.NewRegistryEvent;
 import org.slf4j.Logger;
 
@@ -30,9 +26,7 @@ import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Mod(Paxelz.MODID)
 public final class Paxelz {
@@ -61,8 +55,8 @@ public final class Paxelz {
 
     private void onCapabilityAttached(RegisterCapabilitiesEvent event) {
         for (ItemLike item : PaxelzItems.PAXELS) {
-            event.registerItem(Capabilities.EnergyStorage.ITEM, (stack, ctx) -> PaxelUtils.hasUpgrade(stack, PaxelzUpgrades.ENERGY_STORAGE)
-                    ? new PaxelzEnergyComponent(stack, PaxelzComponents.ENERGY_STORAGE.get(), 1000)
+            event.registerItem(Capabilities.Energy.ITEM, (stack, ctx) -> PaxelUtils.hasUpgrade(stack, PaxelzUpgrades.ENERGY_STORAGE)
+                    ? new PaxelzEnergyComponent(ctx, stack, PaxelzComponents.ENERGY_STORAGE.get(), 1000)
                     : null, item.asItem());
         }
     }
@@ -88,8 +82,8 @@ public final class Paxelz {
         }
     }
 
-    public static ResourceLocation rl(String path) {
-        return ResourceLocation.fromNamespaceAndPath(MODID, path);
+    public static Identifier id(String path) {
+        return Identifier.fromNamespaceAndPath(MODID, path);
     }
 
 }

@@ -29,7 +29,7 @@ public final class PaxelzTabs {
                     output.accept(PaxelzItems.UPGRADE_ENERGY_STORAGE);
                     output.accept(PaxelzItems.UPGRADE_STORAGE_LINK);
                     output.accept(PaxelzItems.UPGRADE_VEIN_MINER);
-                    output.accept(PaxelzItems.UPGRADE_SPELUNKER);
+                    //output.accept(PaxelzItems.UPGRADE_WALL_PHASE);
                 })
                 .build());
     }
