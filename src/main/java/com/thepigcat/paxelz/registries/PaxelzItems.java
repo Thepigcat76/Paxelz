@@ -24,6 +24,7 @@ public final class PaxelzItems {
 
     public static final DeferredItem<PaxelItem> WOODEN_PAXEL = paxelItem("wooden_paxel", ToolMaterial.WOOD, 0);
     public static final DeferredItem<PaxelItem> STONE_PAXEL = paxelItem("stone_paxel", ToolMaterial.STONE, 0);
+    public static final DeferredItem<PaxelItem> COPPER_PAXEL = paxelItem("copper_paxel", ToolMaterial.COPPER, 1);
     public static final DeferredItem<PaxelItem> IRON_PAXEL = paxelItem("iron_paxel", ToolMaterial.IRON, 1);
     public static final DeferredItem<PaxelItem> GOLD_PAXEL = paxelItem("gold_paxel", ToolMaterial.GOLD, 3);
     public static final DeferredItem<PaxelItem> DIAMOND_PAXEL = paxelItem("diamond_paxel", ToolMaterial.DIAMOND, 2);

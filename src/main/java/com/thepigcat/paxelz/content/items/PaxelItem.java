@@ -34,6 +34,7 @@ import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.component.Tool;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.ClipContext;
@@ -331,18 +332,12 @@ public class PaxelItem extends Item {
         return Optional.ofNullable(itemStack.get(PaxelzComponents.UPGRADES).maxUpgrades() > 0 ? new PaxelTooltipComponent(itemStack.get(PaxelzComponents.UPGRADES)) : null);
     }
 
-    //    @Override
-//    public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> builder, TooltipFlag tooltipFlag) {
-//        if (PaxelUtils.hasUpgrade(stack, PaxelzUpgrades.ENERGY_STORAGE)) {
-//            addEnergyTooltip(builder, stack);
-//        }
-//        if (stack.has(PaxelzComponents.UPGRADES.get())) {
-//            UpgradesComponent upgradesComponent = stack.get(PaxelzComponents.UPGRADES.get());
-//            if (upgradesComponent.maxUpgrades() != 0) {
-//                upgradesComponent.addTooltip(builder);
-//            }
-//        }
-///    }
+    @Override
+    public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> builder, TooltipFlag tooltipFlag) {
+        if (PaxelUtils.hasUpgrade(stack, PaxelzUpgrades.ENERGY_STORAGE)) {
+            addEnergyTooltip(builder, stack);
+        }
+    }
 
     private static void addEnergyTooltip(Consumer<Component> tooltip, ItemStack itemStack) {
         EnergyHandler energyHandler = itemStack.getCapability(Capabilities.Energy.ITEM, ItemAccess.forStack(itemStack));

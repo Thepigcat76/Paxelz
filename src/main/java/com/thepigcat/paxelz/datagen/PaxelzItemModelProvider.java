@@ -8,6 +8,7 @@ public final class PaxelzItemModelProvider {
     public void registerModels(ItemModelGenerators generators) {
         generators.generateFlatItem(PaxelzItems.WOODEN_PAXEL.get(), ModelTemplates.FLAT_HANDHELD_ITEM);
         generators.generateFlatItem(PaxelzItems.STONE_PAXEL.get(), ModelTemplates.FLAT_HANDHELD_ITEM);
+        generators.generateFlatItem(PaxelzItems.COPPER_PAXEL.get(), ModelTemplates.FLAT_HANDHELD_ITEM);
         generators.generateFlatItem(PaxelzItems.IRON_PAXEL.get(), ModelTemplates.FLAT_HANDHELD_ITEM);
         generators.generateFlatItem(PaxelzItems.GOLD_PAXEL.get(), ModelTemplates.FLAT_HANDHELD_ITEM);
         generators.generateFlatItem(PaxelzItems.DIAMOND_PAXEL.get(), ModelTemplates.FLAT_HANDHELD_ITEM);

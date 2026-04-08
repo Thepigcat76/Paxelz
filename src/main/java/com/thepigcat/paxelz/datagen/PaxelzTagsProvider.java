@@ -24,6 +24,7 @@ public final class PaxelzTagsProvider {
             tag(PaxelzTags.Items.PAXEL)
                     .add(PaxelzItems.WOODEN_PAXEL.get())
                     .add(PaxelzItems.STONE_PAXEL.get())
+                    .add(PaxelzItems.COPPER_PAXEL.get())
                     .add(PaxelzItems.IRON_PAXEL.get())
                     .add(PaxelzItems.GOLD_PAXEL.get())
                     .add(PaxelzItems.DIAMOND_PAXEL.get())

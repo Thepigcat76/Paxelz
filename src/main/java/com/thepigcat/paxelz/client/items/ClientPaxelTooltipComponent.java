@@ -76,7 +76,7 @@ public record ClientPaxelTooltipComponent(PaxelTooltipComponent component,
 
     @Override
     public int getHeight(Font font) {
-        return 16 + (Minecraft.getInstance().hasShiftDown() && !this.component().component().upgrades().isEmpty() ? (this.component.component().maxUpgrades() - 1) * 16 : 0);
+        return 18 + (Minecraft.getInstance().hasShiftDown() && !this.component().component().upgrades().isEmpty() ? (this.component.component().maxUpgrades() - 1) * 16 : 0);
     }
 
     @Override

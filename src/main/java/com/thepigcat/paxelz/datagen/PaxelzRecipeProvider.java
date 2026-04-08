@@ -23,6 +23,7 @@ public final class PaxelzRecipeProvider extends RecipeProvider {
         paxelRecipe(PaxelzItems.WOODEN_PAXEL, Items.WOODEN_AXE, Items.WOODEN_SHOVEL, Items.WOODEN_PICKAXE);
         paxelRecipe(PaxelzItems.STONE_PAXEL, Items.STONE_AXE, Items.STONE_SHOVEL, Items.STONE_PICKAXE);
         paxelRecipe(PaxelzItems.IRON_PAXEL, Items.IRON_AXE, Items.IRON_SHOVEL, Items.IRON_PICKAXE);
+        paxelRecipe(PaxelzItems.COPPER_PAXEL, Items.COPPER_AXE, Items.COPPER_SHOVEL, Items.COPPER_PICKAXE);
         paxelRecipe(PaxelzItems.GOLD_PAXEL, Items.GOLDEN_AXE, Items.GOLDEN_SHOVEL, Items.GOLDEN_PICKAXE);
         paxelRecipe(PaxelzItems.DIAMOND_PAXEL, Items.DIAMOND_AXE, Items.DIAMOND_SHOVEL, Items.DIAMOND_PICKAXE);
         netheriteSmithing(PaxelzItems.DIAMOND_PAXEL.asItem(), RecipeCategory.COMBAT, PaxelzItems.NETHERITE_PAXEL.asItem());

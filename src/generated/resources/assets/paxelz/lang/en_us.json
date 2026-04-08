@@ -1,4 +1,5 @@
 {
+  "item.paxelz.copper_paxel": "Copper Paxel",
   "item.paxelz.diamond_paxel": "Diamond Paxel",
   "item.paxelz.gold_paxel": "Gold Paxel",
   "item.paxelz.iron_paxel": "Iron Paxel",
@@ -7,7 +8,6 @@
   "item.paxelz.upgrade_area_mining": "Upgrade Area Mining",
   "item.paxelz.upgrade_base": "Upgrade Base",
   "item.paxelz.upgrade_energy_storage": "Upgrade Energy Storage",
-  "item.paxelz.upgrade_spelunker": "Upgrade Spelunker",
   "item.paxelz.upgrade_storage_link": "Upgrade Storage Link",
   "item.paxelz.upgrade_vein_miner": "Upgrade Vein Miner",
   "item.paxelz.wooden_paxel": "Wooden Paxel",
@@ -20,6 +20,5 @@
   "upgrade.paxelz.empty": "Empty",
   "upgrade.paxelz.energy_storage": "Energy Storage",
   "upgrade.paxelz.storage_link": "Storage Link",
-  "upgrade.paxelz.vein_miner": "Vein Miner",
-  "upgrade.paxelz.wall_phase": "Spelunker"
+  "upgrade.paxelz.vein_miner": "Vein Miner"
 }

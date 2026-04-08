@@ -15,9 +15,10 @@ public final class PaxelzTabs {
         TABS.register("main", () -> CreativeModeTab.builder()
                 .icon(PaxelzItems.DIAMOND_PAXEL::toStack)
                 .title(Component.translatable("tab.paxelz.main"))
-                .displayItems((params, output) -> {
+                .displayItems((_, output) -> {
                     addPaxel(output, PaxelzItems.WOODEN_PAXEL);
                     addPaxel(output, PaxelzItems.STONE_PAXEL);
+                    addPaxel(output, PaxelzItems.COPPER_PAXEL);
                     addPaxel(output, PaxelzItems.IRON_PAXEL);
                     addPaxel(output, PaxelzItems.GOLD_PAXEL);
                     addPaxel(output, PaxelzItems.DIAMOND_PAXEL);

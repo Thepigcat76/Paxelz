@@ -24,6 +24,7 @@ public final class PaxelzLangProvider extends LanguageProvider {
 
         add(PaxelzItems.WOODEN_PAXEL.get(), "Wooden Paxel");
         add(PaxelzItems.STONE_PAXEL.get(), "Stone Paxel");
+        add(PaxelzItems.COPPER_PAXEL.get(), "Copper Paxel");
         add(PaxelzItems.IRON_PAXEL.get(), "Iron Paxel");
         add(PaxelzItems.GOLD_PAXEL.get(), "Gold Paxel");
         add(PaxelzItems.DIAMOND_PAXEL.get(), "Diamond Paxel");
